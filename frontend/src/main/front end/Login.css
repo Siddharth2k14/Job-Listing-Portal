@@ -1,0 +1,127 @@
+body{
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background-color:rgb(7, 37, 63);
+}
+.login-box{
+    width: 500px;
+    height: 500px;
+    margin: 80px auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    place-items: center;
+    background-color: #ccc;
+    
+}
+.login-box input, .login-box button {
+    place-items: center;
+    margin-top: 30px;
+    padding: 5px;
+}
+.login-box button {
+    width: 200px;
+    margin-top: 90px;
+    padding: 2px;
+    cursor: pointer;
+}
+h2{
+    margin-top: 20px;
+}
+.signUp-box{
+    width: 600px;
+    height: 600px;
+    margin: 80px auto;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    place-items: center;
+    background-color: #ccc;
+}
+.signUp-box input, .signUp-box button {
+    place-items: center;
+    margin-top: 30px;
+    padding: 5px;
+}
+.signUp-box button {
+    width: 200px;
+    margin-top: 90px;
+    padding: 2px;
+    cursor: pointer;
+}
+/* --- MOBILE VIEW (phones) --- */
+@media (max-width: 600px) {
+
+  body {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .login-box,
+  .signUp-box {
+    width: 100%;
+    max-width: 360px;
+    height: auto;              /* remove fixed height */
+    padding: 20px;
+    margin: 40px 0;
+    gap: 15px;
+  }
+
+  h2 {
+    margin-top: 0;
+    font-size: 24px;
+    text-align: center;
+  }
+
+  .login-box input,
+  .signUp-box input {
+    width: 100%;
+    margin-top: 15px;
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .login-box button,
+  .signUp-box button {
+    width: 100%;               /* Full width button for mobile */
+    margin-top: 30px;
+    padding: 10px;
+    font-size: 16px;
+  }
+}
+
+
+/* --- EXTRA SMALL DEVICES (very small phones < 360px) --- */
+@media (max-width: 360px) {
+  .login-box,
+  .signUp-box {
+    max-width: 300px;
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 20px;
+  }
+
+  .login-box input,
+  .signUp-box input {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .login-box button,
+  .signUp-box button {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
