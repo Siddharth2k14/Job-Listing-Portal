@@ -1,0 +1,52 @@
+.anim{
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(180deg, rgba(132, 149, 219, 0.6), rgba(3, 15, 56, 0.8));
+  z-index: 50;
+}
+h1{
+  margin: 0;
+  font-size: 64px;
+  letter-spacing: 0.8px;
+  color: rgb(233, 240, 244);
+  text-shadow: 0 6px 18px rgba(124,58,237,0.16);
+  font-family:Arial, Helvetica, sans-serif;
+  font-weight: bold;
+}
+.btn {
+   display: flex;
+   gap: 3rem;
+   padding: 1rem;
+}
+/* --- MOBILE OPTIMIZATION --- */
+@media (max-width: 600px) {
+  .anim {
+    padding: 1.5rem;
+    place-items: start center; /* Keeps content visible, avoids cropping */
+    text-align: center;
+  }
+
+  h1 {
+    font-size: 36px;         /* Scales down for phones */
+    line-height: 1.2;
+    text-shadow: 0 4px 12px rgba(124,58,237,0.16);
+  }
+
+  .btn {
+    flex-direction: column; /* Buttons stack vertically */
+    gap: 1rem;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem 0;
+  }
+}
+
+/* --- EXTRA SMALL DEVICES (optional) --- */
+@media (max-width: 380px) {
+  h1 {
+    font-size: 30px;
+  }
+}
