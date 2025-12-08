@@ -1,30 +1,20 @@
-import dotenv from "dotenv";
 import mongoose from "mongoose";
-import process from "process";
+import dotenv from "dotenv";
+
 dotenv.config();
 
-let isConnected = false;
-
-const connectAuthDB = async () => {
-  if (isConnected) {
-    console.log("=> Using existing database connection.");
-    return;
-  }
-
-  if (!process.env.MONGO_URI) {
-    throw new Error(
-      "MONGO_URI is not defined in environment variables"
-    );
-  }
-
+const connectDB = async () => {
   try {
+    if (!process.env.MONGO_URI) {
+      throw new Error("❌ MONGO_URI is missing in .env");
+    }
+
     await mongoose.connect(process.env.MONGO_URI);
-    isConnected = true;
-    console.log("Connected to authDB successfully!");
+    console.log("✅ MongoDB Connected Successfully");
   } catch (error) {
-    console.error("Database connection error:", error);
-    throw error;
+    console.error("❌ MongoDB Connection Error:", error.message);
+    process.exit(1);
   }
 };
 
-export default connectAuthDB;
+export default connectDB;
