@@ -1,0 +1,30 @@
+.success-page {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(to right, #0f2027, #203a43, #2c5364); /* dark blue gradient */
+  color: white;
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.animate-drop {
+  animation: drop 0.8s ease forwards;
+}
+
+@keyframes drop {
+  0% {
+    transform: translateY(-100px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
