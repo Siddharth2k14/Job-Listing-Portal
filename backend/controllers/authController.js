@@ -1,17 +1,11 @@
 import dotenv from 'dotenv';
 dotenv.config();
-
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from './user.js';
 import nodemailer from 'nodemailer';
-
-// -----------------------------------------------------------
-// Email transporter (with fallback for dev mode)
-// -----------------------------------------------------------
 const createTransporter = () => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return null;
-
   return nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -37,9 +31,6 @@ const sendOtpEmail = async (email, otp) => {
   });
 };
 
-// -----------------------------------------------------------
-// SIGNUP
-// -----------------------------------------------------------
 export const signupUser = async (req, res) => {
   try {
     const { name, email, password, role, companyName } = req.body;
@@ -81,9 +72,6 @@ export const signupUser = async (req, res) => {
   }
 };
 
-// -----------------------------------------------------------
-// LOGIN → Validate password → Generate OTP → Email OTP
-// -----------------------------------------------------------
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -132,9 +120,6 @@ export const loginUser = async (req, res) => {
   }
 };
 
-// -----------------------------------------------------------
-// VERIFY OTP → Issue JWT
-// -----------------------------------------------------------
 export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
@@ -150,14 +135,12 @@ export const verifyOtp = async (req, res) => {
         message: 'This email is not registered. Kindly sign up first.',
       });
 
-    // Check OTP + expiry
     if (!user.otp || !user.otpExpires || user.otpExpires < new Date())
       return res.status(401).json({ message: 'Invalid or expired OTP.' });
 
     if (user.otp !== otp)
       return res.status(401).json({ message: 'Invalid OTP.' });
 
-    // Clear OTP + set verified
     user.otp = undefined;
     user.otpExpires = undefined;
     user.isVerified = true;
@@ -182,4 +165,5 @@ export const verifyOtp = async (req, res) => {
     return res.status(500).json({ message: 'Server error.' });
   }
 };
+
 
