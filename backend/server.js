@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import connectDB from "./connectDB.js";
+import connectDB from "./db/connectDB.js"
 import authRoutes from "./routes/authRoutes.js";
 
 dotenv.config();    // <--- make sure this is here
@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 app.use(express.json());
 
 // allow frontend (React) to talk to backend
-const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:3000';
+const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
 app.use(cors({ origin: FRONTEND_ORIGIN }));
 
 // connect DB

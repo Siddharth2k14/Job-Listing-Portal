@@ -7,9 +7,9 @@ export default function Signup() {
     <div className='anim'>
       <h1>You Want To Sign Up As?</h1>
       <div className='btn'>
-      <button type="button" class="btn btn-dark fs-3" onClick={()=>navigate("/Recruiter")}>RECRUITER</button>
+      <button type="button" className="btn btn-dark fs-3" onClick={()=>navigate("/Recruiter")}>RECRUITER</button>
       <h1>OR</h1>
-      <button type="button" class="btn btn-dark fs-3" onClick={()=>navigate("/Applicant")}>APPLICANT</button>
+      <button type="button" className="btn btn-dark fs-3" onClick={()=>navigate("/Applicant")}>APPLICANT</button>
       </div>
     </div>
   )

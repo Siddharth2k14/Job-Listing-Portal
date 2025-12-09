@@ -2,18 +2,26 @@ import dotenv from 'dotenv';
 dotenv.config();
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import User from './user.js';
+import User from "../models/user.js";
 import nodemailer from 'nodemailer';
+
 const createTransporter = () => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) return null;
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.log("Email credentials are missing!");
+    return null;
+  }
+
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true, // SSL
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
   });
 };
+
 
 const sendOtpEmail = async (email, otp) => {
   const transporter = createTransporter();
@@ -125,9 +133,7 @@ export const verifyOtp = async (req, res) => {
     const { email, otp } = req.body;
 
     if (!email || !otp)
-      return res
-        .status(400)
-        .json({ message: 'Email and OTP are required.' });
+      return res.status(400).json({ message: 'Email and OTP are required.' });
 
     const user = await User.findOne({ email });
     if (!user)
@@ -135,17 +141,21 @@ export const verifyOtp = async (req, res) => {
         message: 'This email is not registered. Kindly sign up first.',
       });
 
-    if (!user.otp || !user.otpExpires || user.otpExpires < new Date())
+    if (!user.otp || !user.otpExpires || user.otpExpires < Date.now()) {
       return res.status(401).json({ message: 'Invalid or expired OTP.' });
+    }
 
-    if (user.otp !== otp)
+    if (user.otp !== otp) {
       return res.status(401).json({ message: 'Invalid OTP.' });
+    }
 
-    user.otp = undefined;
-    user.otpExpires = undefined;
+    // CLEAR OTP
+    user.otp = null;
+    user.otpExpires = null;
     user.isVerified = true;
     await user.save();
 
+    // CREATE JWT
     const payload = {
       id: user._id,
       email: user.email,
@@ -165,5 +175,6 @@ export const verifyOtp = async (req, res) => {
     return res.status(500).json({ message: 'Server error.' });
   }
 };
+
 
 
