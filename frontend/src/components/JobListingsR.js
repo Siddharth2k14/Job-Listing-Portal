@@ -85,21 +85,21 @@ export default function JobListingsAdmin() {
             {/* Job Details */}
             <h6 className="mt-3 mb-2" style={{ color: "#00e5ff" }}>Job Details</h6>
             <input
-              className="form-control mb-2  text-white border-info"
+              className="form-control mb-2 border-info"
               placeholder="Job Title"
               name="title"
               value={formData.title}
               onChange={handleChange}
             />
             <input
-              className="form-control mb-2 text-white border-info"
+              className="form-control mb-2 border-info"
               placeholder="Location"
               name="location"
               value={formData.location}
               onChange={handleChange}
             />
             <input
-              className="form-control mb-3 text-white border-info"
+              className="form-control mb-3 border-info"
               placeholder="Salary Range"
               name="salary"
               value={formData.salary}
@@ -109,7 +109,7 @@ export default function JobListingsAdmin() {
             {/* Job Description */}
             <h6 className="mt-3 mb-2" style={{ color: "#00e5ff" }}>Job Description</h6>
             <textarea
-              className="form-control mb-3 text-white border-info"
+              className="form-control mb-3 border-info"
               placeholder="Describe the role, team, and expectations"
               name="description"
               value={formData.description}
@@ -119,14 +119,14 @@ export default function JobListingsAdmin() {
             {/* Requirements */}
             <h6 className="mt-3 mb-2" style={{ color: "#00e5ff" }}>Requirements</h6>
             <textarea
-              className="form-control mb-2 text-white border-info"
+              className="form-control mb-2 border-info"
               placeholder="Qualifications"
               name="qualifications"
               value={formData.qualifications}
               onChange={handleChange}
             />
             <textarea
-              className="form-control mb-3 text-white border-info"
+              className="form-control mb-3 border-info"
               placeholder="Responsibilities"
               name="responsibilities"
               value={formData.responsibilities}
