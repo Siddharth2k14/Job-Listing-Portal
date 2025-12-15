@@ -1,0 +1,31 @@
+.sidebar {
+  width: 250px; /* fixed width */
+  background: #001f3f;
+  color: white;
+  padding: 20px;
+  flex-shrink: 0;
+}
+
+/* Right-side content */
+.content-layout {
+  flex: 1;
+  min-height: 100vh; /* full height */
+  background: #012c40;
+  display: flex;
+  justify-content: center; /* center horizontally */
+  align-items: flex-start; /* top alignment, scrollable if needed */
+  padding: 40px;
+  box-sizing: border-box;
+  overflow-y: auto; /* scroll if content exceeds viewport */
+}
+
+/* Inner page container for centering */
+.page-container {
+  width: 100%;
+  max-width: 900px; /* limits the width of content */
+  animation: fadeIn 0.6s ease-in-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px);}
+  to { opacity: 1; transform: translateY(0);}
+}

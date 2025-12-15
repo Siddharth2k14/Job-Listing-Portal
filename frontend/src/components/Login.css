@@ -1,5 +1,4 @@
-/* ===== BACKGROUND WITH BLUE GRADIENT ===== */
-body {
+.login-page {
     position: fixed;
     inset: 0;
     display: grid;
@@ -29,7 +28,7 @@ body {
     transform: translateY(-50px);
     animation: dropFade 0.9s ease forwards;
 }
-h2 {
+.login-h2 {
     color: #000;
     margin: 0;
     font-size: 30px;
@@ -71,7 +70,7 @@ h2 {
 }
 /* ===== MOBILE VIEW (phones) ===== */
 @media (max-width: 600px) {
-    body {
+    .login-page {
         padding: 20px;
         display: flex;
         justify-content: center;
@@ -115,6 +114,21 @@ h2 {
         padding: 10px;
     }
 }
+.signUp-h2 {
+    color: #000;
+    margin: 0;
+    font-size: 30px;
+}
+.signUp-page {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background-color: rgb(0, 37, 44);
+    background-size: 300% 300%;
+    animation: gradientMove 10s ease infinite;
+    margin: 0;
+}
 .signUp-box{
    width: 450px;
     padding: 40px;
@@ -128,6 +142,7 @@ h2 {
     opacity: 0;
     transform: translateY(-50px);
     animation: dropFade 0.9s ease forwards;
+    
 }
 .signUp-box input {
     width: 85%;
