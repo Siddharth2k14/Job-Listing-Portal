@@ -1,40 +1,22 @@
-// import express from 'express';
-// import dotenv from 'dotenv';
-// import cors from 'cors';
-// import connectDB from "./db/connectDB.js"
-// import authRoutes from "./routes/authRoutes.js";
-
-// dotenv.config();    // <--- make sure this is here
-
-// const app = express();   // <--- create app BEFORE using it
-// const PORT = process.env.PORT || 5000;
-
-// // middleware
-// app.use(express.json());
-
-// // allow frontend (React) to talk to backend
-// const FRONTEND_ORIGIN = process.env.FRONTEND_ORIGIN || 'http://localhost:5173';
-// app.use(cors({ origin: FRONTEND_ORIGIN }));
-
-// // connect DB
-// connectDB();
-
-// // routes
-// app.use('/api/auth', authRoutes);    // <--- NOW this is correct
-
-// app.get('/', (req, res) => res.send('Job Portal API running'));
-
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import connectDB from "./db/connectDB.js";
-import authRoutes from "./routes/authRoutes.js";
-
+import connectDB from "./connectDB.js";
+import authRoutes from "./authRoutes.js";
+import multer from "multer";
+import fs from "fs";
 dotenv.config();
+// Storage for resume files
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
 
+const upload = multer({ storage });
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -58,11 +40,62 @@ connectDB();
 // Auth routes
 app.use('/api/auth', authRoutes);
 
+app.post("/apply-job", upload.single("resume"), (req, res) => {
+  try {
+    const { name, email, phone, coverLetter, jobTitle } = req.body;
+    const resumeName = req.file ? req.file.filename : null;
+
+    // Load existing applications
+    let applications = [];
+    if (fs.existsSync("applications.json")) {
+      applications = JSON.parse(fs.readFileSync("applications.json"));
+    }
+
+    // Add new application
+    const newApp = {
+      id: Date.now(),
+      name,
+      email,
+      phone,
+      coverLetter,
+      jobTitle,
+      resumeName,
+    };
+    applications.push(newApp);
+
+    // Save back to file
+    fs.writeFileSync("applications.json", JSON.stringify(applications, null, 2));
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+
 app.get('/', (req, res) => {
   res.send("Job Portal API running ✔");
 });
-
+app.post("/save-profile", (req, res) => {
+  const data = JSON.stringify(req.body, null, 2);
+  fs.writeFileSync("profile.json", data);
+  res.json({ success: true });
+});
+app.post("/upload-resume", upload.single("resume"), (req, res) => {
+  res.json({
+    success: true,
+    filename: req.file.filename,
+    originalName: req.file.originalname
+  });
+});
+app.get("/get-profile", (req, res) => {
+  if (!fs.existsSync("profile.json")) {
+    return res.json(null);
+  }
+  const data = JSON.parse(fs.readFileSync("profile.json"));
+  res.json(data);
+});
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
