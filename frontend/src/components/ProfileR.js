@@ -1,205 +1,223 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
+import { Container, Card, Form, Button } from "react-bootstrap";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
+const STORAGE_KEY = "recruiterProfile";
+
 export default function ProfileR() {
   const navigate = useNavigate();
+  const [isEditing, setIsEditing] = useState(false);
 
   const [profile, setProfile] = useState({
-    // Employer Info
     name: "",
-    role: "Recruiter",
     designation: "",
-    resume: "",
+    photo: "",
 
-    // Company Info
-    companyName: "",
-    companyAddress: "",
-    companyWebsite: "",
-    companyDescription: "",
+    overview: "",
+    industry: "",
+    type: "",
+    experience: "",
+    education: "",
+    certifications: "",
+    projects: "",
+    skills: "",
+    languages: "",
+    location: "",
+    links: "",
 
-    // Contact Info
     email: "",
-    phone: "",
+    phone: ""
   });
 
-  // ---------------- Load Profile ----------------
+  // -------- Load once --------
   useEffect(() => {
-    const savedProfile = localStorage.getItem("recruiterProfile");
-    const signupName = localStorage.getItem("signupName");
-
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
-    } else {
-      setProfile(prev => ({
-        ...prev,
-        name: signupName || "",
-      }));
-    }
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) setProfile(JSON.parse(saved));
   }, []);
 
-  // ---------------- Save Profile ----------------
+  // -------- Save ONLY on button click --------
   const handleSave = () => {
-    localStorage.setItem("recruiterProfile", JSON.stringify(profile));
-    navigate("/RecruiterDashboard");
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+      window.dispatchEvent(new Event("storage")); // sidebar sync
+      setIsEditing(false);
+      navigate("/RecruiterDashboard");
+    } catch (err) {
+      alert("Image too large. Please upload a smaller image.");
+    }
   };
 
-  // ---------------- Logout ----------------
-  const handleLogout = () => {
-    localStorage.removeItem("recruiterProfile");
-    localStorage.removeItem("authToken");
-    navigate("/");
+  // -------- Image upload (NO autosave) --------
+  const compressImage = (file, maxWidth = 300, quality = 0.7) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        img.src = e.target.result;
+      };
+
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const scale = maxWidth / img.width;
+
+        canvas.width = maxWidth;
+        canvas.height = img.height * scale;
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const compressedBase64 = await compressImage(file);
+
+    setProfile(prev => ({
+      ...prev,
+      photo: compressedBase64
+    }));
   };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      style={{ minHeight: "100vh", backgroundColor: "#003f55", color: "white" }}
+      transition={{ duration: 0.5 }}
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#003f55",
+        color: "white",
+        width: "100vh"
+      }}
     >
       <Container className="py-4">
-        <h2 className="mb-4">Recruiter Profile</h2>
-
-        {/* ================= Employer Info ================= */}
-        <Card className="mb-4 shadow" style={{ backgroundColor: "#004b66" }}>
-          <Card.Body>
-            <Card.Title style={{ color: "cyan" }}>
-              Employer Information
-            </Card.Title>
-
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Full Name</Form.Label>
-                  <Form.Control
-                    value={profile.name}
-                    onChange={e => setProfile({ ...profile, name: e.target.value })}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Designation / Role</Form.Label>
-                  <Form.Control
-                    value={profile.designation}
-                    onChange={e => setProfile({ ...profile, designation: e.target.value })}
-                    placeholder="HR Manager, Talent Lead..."
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Resume / Portfolio Link</Form.Label>
-                  <Form.Control
-                    value={profile.resume}
-                    onChange={e => setProfile({ ...profile, resume: e.target.value })}
-                    placeholder="Google Drive / LinkedIn / Portfolio URL"
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
-
-        {/* ================= Company Info ================= */}
-        <Card className="mb-4 shadow" style={{ backgroundColor: "#005f7f" }}>
-          <Card.Body>
-            <Card.Title style={{ color: "cyan" }}>
-              Company Information
-            </Card.Title>
-
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Company Name</Form.Label>
-                  <Form.Control
-                    value={profile.companyName}
-                    onChange={e => setProfile({ ...profile, companyName: e.target.value })}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Company Website</Form.Label>
-                  <Form.Control
-                    value={profile.companyWebsite}
-                    onChange={e => setProfile({ ...profile, companyWebsite: e.target.value })}
-                    placeholder="https://company.com"
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Company Address</Form.Label>
-                  <Form.Control
-                    value={profile.companyAddress}
-                    onChange={e => setProfile({ ...profile, companyAddress: e.target.value })}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={12}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Company Description</Form.Label>
-                  <Form.Control
-                    as="textarea"
-                    rows={3}
-                    value={profile.companyDescription}
-                    onChange={e => setProfile({ ...profile, companyDescription: e.target.value })}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
-
-        {/* ================= Contact Info ================= */}
-        <Card className="mb-4 shadow" style={{ backgroundColor: "#006f99" }}>
-          <Card.Body>
-            <Card.Title style={{ color: "cyan" }}>
-              Contact Details
-            </Card.Title>
-
-            <Row>
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    value={profile.email}
-                    onChange={e => setProfile({ ...profile, email: e.target.value })}
-                  />
-                </Form.Group>
-              </Col>
-
-              <Col md={6}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Phone</Form.Label>
-                  <Form.Control
-                    value={profile.phone}
-                    onChange={e => setProfile({ ...profile, phone: e.target.value })}
-                  />
-                </Form.Group>
-              </Col>
-            </Row>
-          </Card.Body>
-        </Card>
-
-        {/* ================= Buttons ================= */}
-        <div className="d-flex justify-content-between">
-          <Button variant="success" onClick={handleSave}>
-            Save Changes
-          </Button>
-
-          <Button variant="danger" onClick={handleLogout}>
-            Logout
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2>Recruiter Profile</h2>
+          <Button variant="info" onClick={() => setIsEditing(!isEditing)}>
+            {isEditing ? "Cancel" : "Edit"}
           </Button>
         </div>
+
+        {/* ================= PROFILE HEADER ================= */}
+        <Card className="mb-4 text-center" style={{ backgroundColor: "#004b66" }}>
+          <Card.Body>
+            <img
+              src={
+                profile.photo ||
+                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
+              }
+              alt="profile"
+              style={{ width: 120, height: 120, borderRadius: "50%" }}
+            />
+
+            {isEditing && (
+              <>
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  className="mt-3"
+                  onChange={handlePhotoChange}
+                />
+
+                {/* 🔹 NAME */}
+                <Form.Control
+                  className="mt-3"
+                  placeholder="Full Name"
+                  value={profile.name}
+                  onChange={e =>
+                    setProfile({ ...profile, name: e.target.value })
+                  }
+                />
+
+                {/* 🔹 DESIGNATION */}
+                <Form.Control
+                  className="mt-2"
+                  placeholder="Designation / Role"
+                  value={profile.designation}
+                  onChange={e =>
+                    setProfile({ ...profile, designation: e.target.value })
+                  }
+                />
+              </>
+            )}
+
+            {!isEditing && (
+              <>
+                <h4 className="mt-3">{profile.name || "—"}</h4>
+                <p>{profile.designation || "Recruiter"}</p>
+              </>
+            )}
+          </Card.Body>
+        </Card>
+
+        {/* ================= VIEW MODE (SINGLE DIV) ================= */}
+        {!isEditing && (
+          <Card style={{ backgroundColor: "#005f7f" }}>
+            <Card.Body>
+              <p><strong>About:</strong> {profile.overview || "Full Stack Developer"}</p>
+              <p><strong>Industry:</strong> {profile.industry || "Amdox"}</p>
+              <p><strong>Type:</strong> {profile.type || "Private"}</p>
+              <p><strong>Experience:</strong> {profile.experience || "7 years"}</p>
+              <p><strong>Education:</strong> {profile.education || "M.Tech"}</p>
+              <p><strong>Certifications:</strong> {profile.certifications || "Web Development"}</p>
+              <p><strong>Projects:</strong> {profile.projects || "Web Development"}</p>
+              <p><strong>Skills:</strong> {profile.skills || "Web Development"}</p>
+              <p><strong>Languages:</strong> {profile.languages || "English"}</p>
+              <p><strong>Location:</strong> {profile.location || "Banglore"}</p>
+              <p><strong>Web / Links:</strong> {profile.links || "https://boris77Portfolio/github.com"}</p>
+              <p><strong>Email:</strong> {profile.email || "boris77@gmail.com"}</p>
+              <p><strong>Phone:</strong> {profile.phone || "+91 123 324 2343"}</p>
+            </Card.Body>
+          </Card>
+        )}
+
+        {/* ================= EDIT MODE ================= */}
+        {isEditing && (
+          <Card style={{ backgroundColor: "#005f7f" }}>
+            <Card.Body>
+              {[
+                ["About / Overview", "overview"],
+                ["Industry", "industry"],
+                ["Type", "type"],
+                ["Experience", "experience"],
+                ["Education", "education"],
+                ["Certifications", "certifications"],
+                ["Projects", "projects"],
+                ["Skills", "skills"],
+                ["Languages", "languages"],
+                ["Location", "location"],
+                ["Web / Profile Links", "links"],
+                ["Email", "email"],
+                ["Phone", "phone"]
+              ].map(([label, key]) => (
+                <Form.Group className="mb-3" key={key}>
+                  <Form.Label>{label}</Form.Label>
+                  <Form.Control
+                    value={profile[key]}
+                    onChange={e =>
+                      setProfile({ ...profile, [key]: e.target.value })
+                    }
+                  />
+                </Form.Group>
+              ))}
+
+              <div className="text-center">
+                <Button variant="success" onClick={handleSave}>
+                  Save Profile
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        )}
       </Container>
     </motion.div>
   );

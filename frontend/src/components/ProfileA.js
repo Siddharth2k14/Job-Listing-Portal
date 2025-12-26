@@ -1,148 +1,273 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { Button, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-
-export default function ApplicantProfile() {
-  const [editMode, setEditMode] = useState(false);
-  const [userData, setUserData] = useState(() => {
-    const saved = localStorage.getItem("applicant_profile");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          name: "Alice Doe",
-          age: "21",
-          location: "Mumbai, India",
-          email: "Alice@example.com",
-          phone: "+91 9876543210",
-        };
+const STORAGE_KEY = "applicant_profile_full";
+export default function ProfileA() {
+  const [isEditing, setIsEditing] = useState(false);
+  const [profile, setProfile] = useState({
+    name: "Alice Doe",
+    role: "Full Stack Developer",
+    about: "I am a passionate full stack developer.",
+    age: "21",
+    location: "Mumbai, India",
+    skills: "HTML, CSS, JavaScript",
+    experience: "1 year",
+    education: {
+      institute: "",
+      degree: "",
+      cgpa: ""
+    },
+    certifications: "",
+    projects: "",
+    languages: "",
+    photo: "https://images.unsplash.com/photo-1607746882042-944635dfe10e"
   });
-
-  const [resume, setResume] = useState(() => {
-    const savedResume = localStorage.getItem("applicant_resume_name");
-    return savedResume ? { name: savedResume } : null;
-  });
-
-  const handleChange = (e) => {
-    const updated = { ...userData, [e.target.name]: e.target.value };
-    setUserData(updated);
-    localStorage.setItem("applicant_profile", JSON.stringify(updated));
+  /* Load from localStorage */
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) setProfile(JSON.parse(saved));
+  }, []);
+  /* Auto-save + notify sidebar */
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    // 🔥 Notify other components (like sidebar)
+    window.dispatchEvent(new Event("storage"));
+  }, [profile]);
+  const handleChange = (key, value) => {
+    setProfile({ ...profile, [key]: value });
   };
-
-  const handleResumeUpload = (e) => {
+  const handleEduChange = (key, value) => {
+    setProfile({
+      ...profile,
+      education: { ...profile.education, [key]: value }
+    });
+  };
+  /* Profile photo upload */
+  const handlePhotoChange = (e) => {
     const file = e.target.files[0];
-    setResume(file);
-    if (file) localStorage.setItem("applicant_resume_name", file.name);
-  };
+    if (!file) return;
 
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setProfile({ ...profile, photo: reader.result });
+    };
+    reader.readAsDataURL(file);
+  };
   return (
     <div
-      className="min-vh-100 d-flex justify-content-center align-items-center p-3 page-container"
-      style={{ background: "#003847" }}
+      style={{
+        flex: 1,
+        minHeight: "100vh",
+        padding: "30px",
+        background: "#003847",
+        overflowY: "auto",
+        overflowX: "hidden"
+      }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="container p-4 rounded-4 shadow-lg"
-        style={{ background: "#005f73", color: "white", maxWidth: "600px" }}
+      <div
+        style={{
+          background: "#005f73",
+          color: "white",
+          width: "100%",
+          maxWidth: "1100px",
+          margin: "0 auto",
+          padding: "30px",
+          borderRadius: "16px"
+        }}
       >
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <h2 className="mb-0">Applicant Profile</h2>
-          <button
-            className="btn btn-outline-info px-3 py-1"
-            onClick={() => setEditMode(!editMode)}
+        {/* HEADER */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2>Applicant Profile</h2>
+          <Button
+            variant="outline-info"
+            onClick={() => setIsEditing(!isEditing)}
           >
-            {editMode ? "Save" : "Edit"}
-          </button>
+            {isEditing ? "Cancel" : "Edit"}
+          </Button>
         </div>
-
-        {/* PERSONAL INFO */}
-        <h5 className="mb-3">Personal Information</h5>
-        {!editMode ? (
-          <div className="mb-4">
-            <p><strong>Name:</strong> {userData.name}</p>
-            <p><strong>Age:</strong> {userData.age}</p>
-            <p><strong>Location:</strong> {userData.location}</p>
-          </div>
-        ) : (
-          <div className="mb-4">
-            <label className="form-label">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              value={userData.name}
-              onChange={handleChange}
-              className="form-control bg-dark text-white border-primary mb-2"
-            />
-            <label className="form-label">Age</label>
-            <input
-              type="number"
-              name="age"
-              value={userData.age}
-              onChange={handleChange}
-              className="form-control bg-dark text-white border-primary mb-2"
-            />
-            <label className="form-label">Location</label>
-            <input
-              type="text"
-              name="location"
-              value={userData.location}
-              onChange={handleChange}
-              className="form-control bg-dark text-white border-primary"
-            />
-          </div>
-        )}
-
-        {/* CONTACT DETAILS */}
-        <h5 className="mb-3">Contact Details</h5>
-        {!editMode ? (
-          <div className="mb-4">
-            <p><strong>Email:</strong> {userData.email}</p>
-            <p><strong>Phone:</strong> {userData.phone}</p>
-          </div>
-        ) : (
-          <div className="mb-4">
-            <label className="form-label">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={userData.email}
-              onChange={handleChange}
-              className="form-control bg-dark text-white border-primary mb-2"
-            />
-            <label className="form-label">Phone Number</label>
-            <input
-              type="text"
-              name="phone"
-              value={userData.phone}
-              onChange={handleChange}
-              className="form-control bg-dark text-white border-primary"
-            />
-          </div>
-        )}
-
-        {/* RESUME */}
-        <h5 className="mb-3">Resume</h5>
-        {!editMode ? (
-          <div className="mb-4">
-            {resume ? (
-              <p><strong>Uploaded:</strong> {resume.name}</p>
-            ) : (
-              <p className="text-secondary">No resume uploaded</p>
-            )}
-          </div>
-        ) : (
-          <div className="mb-4">
-            <input
-              className="form-control bg-dark text-white border-primary"
+        {/* PROFILE PIC */}
+        <div className="text-center mb-4">
+          <img
+            src={profile.photo}
+            alt="Profile"
+            style={{
+              width: 120,
+              height: 120,
+              borderRadius: "50%",
+              objectFit: "cover",
+              border: "3px solid #9bd3dd"
+            }}
+          />
+          {isEditing && (
+            <Form.Control
+              className="mt-3"
               type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={handleResumeUpload}
+              accept="image/*"
+              onChange={handlePhotoChange}
             />
-            {resume && <p className="mt-2 small">Uploaded: {resume.name}</p>}
+          )}
+          <h4 className="mt-3">{profile.name}</h4>
+          <p>{profile.role}</p>
+        </div>
+        {/* ABOUT */}
+        <Section title="About">
+          {isEditing ? (
+            <Form.Control
+              as="textarea"
+              rows={3}
+              value={profile.about}
+              onChange={(e) => handleChange("about", e.target.value)}
+            />
+          ) : (
+            <p>{profile.about || "—"}</p>
+          )}
+        </Section>
+        {/* BASIC INFO */}
+        <Section title="Basic Information">
+          {isEditing ? (
+            <>
+              <Form.Control
+                className="mb-2"
+                value={profile.name}
+                onChange={(e) => handleChange("name", e.target.value)}
+                placeholder="Name"
+              />
+              <Form.Control
+                className="mb-2"
+                value={profile.role}
+                onChange={(e) => handleChange("role", e.target.value)}
+                placeholder="Role"
+              />
+              <Form.Control
+                className="mb-2"
+                value={profile.age}
+                onChange={(e) => handleChange("age", e.target.value)}
+                placeholder="Age"
+              />
+              <Form.Control
+                value={profile.location}
+                onChange={(e) => handleChange("location", e.target.value)}
+                placeholder="Location"
+              />
+            </>
+          ) : (
+            <>
+              <p><strong>Name:</strong> {profile.name}</p>
+              <p><strong>Role:</strong> {profile.role}</p>
+              <p><strong>Age:</strong> {profile.age}</p>
+              <p><strong>Location:</strong> {profile.location}</p>
+            </>
+          )}
+        </Section>
+        {/* SKILLS */}
+        <Section title="Skills">
+          {isEditing ? (
+            <Form.Control
+              value={profile.skills}
+              onChange={(e) => handleChange("skills", e.target.value)}
+            />
+          ) : (
+            <p>{profile.skills || "—"}</p>
+          )}
+        </Section>
+        {/* EXPERIENCE */}
+        <Section title="Experience">
+          {isEditing ? (
+            <Form.Control
+              value={profile.experience}
+              onChange={(e) => handleChange("experience", e.target.value)}
+            />
+          ) : (
+            <p>{profile.experience || "—"}</p>
+          )}
+        </Section>
+        {/* EDUCATION */}
+        <Section title="Education">
+          {isEditing ? (
+            <>
+              <Form.Control
+                className="mb-2"
+                value={profile.education.institute}
+                onChange={(e) => handleEduChange("institute", e.target.value)}
+                placeholder="Institute"
+              />
+              <Form.Control
+                className="mb-2"
+                value={profile.education.degree}
+                onChange={(e) => handleEduChange("degree", e.target.value)}
+                placeholder="Degree"
+              />
+              <Form.Control
+                value={profile.education.cgpa}
+                onChange={(e) => handleEduChange("cgpa", e.target.value)}
+                placeholder="CGPA"
+              />
+            </>
+          ) : (
+            <p>
+              {profile.education.institute || "—"} <br />
+              {profile.education.degree}{" "}
+              {profile.education.cgpa && `(${profile.education.cgpa})`}
+            </p>
+          )}
+        </Section>
+        {/* CERTIFICATIONS */}
+        <Section title="Certifications">
+          {isEditing ? (
+            <Form.Control
+              as="textarea"
+              rows={2}
+              value={profile.certifications}
+              onChange={(e) => handleChange("certifications", e.target.value)}
+            />
+          ) : (
+            <p>{profile.certifications || "—"}</p>
+          )}
+        </Section>
+        {/* PROJECTS */}
+        <Section title="Projects">
+          {isEditing ? (
+            <Form.Control
+              as="textarea"
+              rows={3}
+              value={profile.projects}
+              onChange={(e) => handleChange("projects", e.target.value)}
+            />
+          ) : (
+            <p>{profile.projects || "—"}</p>
+          )}
+        </Section>
+        {/* LANGUAGES */}
+        <Section title="Languages">
+          {isEditing ? (
+            <Form.Control
+              placeholder="Languages known"
+              value={profile.languages}
+              onChange={(e) => handleChange("languages", e.target.value)}
+            />
+          ) : (
+            <p>{profile.languages || "—"}</p>
+          )}
+        </Section>
+        {isEditing && (
+          <div className="text-center mt-4">
+            <Button variant="info" onClick={() => setIsEditing(false)}>
+              Save Profile
+            </Button>
           </div>
         )}
-      </motion.div>
+      </div>
+    </div>
+  );
+}
+/* Reusable Section Component */
+function Section({ title, children }) {
+  return (
+    <div className="mb-4">
+      <h5 style={{ borderBottom: "1px solid #9bd3dd", paddingBottom: "6px" }}>
+        {title}
+      </h5>
+      <div className="mt-3">{children}</div>
     </div>
   );
 }

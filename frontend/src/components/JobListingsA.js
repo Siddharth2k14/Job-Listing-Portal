@@ -1,68 +1,49 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useNavigate } from 'react-router-dom';
+
 import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function JobListings() {
-  const navigate = useNavigate();
-  const jobs = [
-    {
-      title: "Frontend Developer (React)",
-      description: "Build responsive UI components for modern web apps.",
-      qualifications: "HTML, CSS, JS, React, Bootstrap",
-      responsibilities: "Develop UI, fix bugs, collaborate with backend team",
-      location: "Mumbai, India",
-      salary: "₹4,00,000 - ₹6,00,000/year",
-    },
-    {
-      title: "Frontend Developer (Vue)",
-      description: "Implement modern, dynamic interfaces using Vue.js.",
-      qualifications: "Vue.js, Tailwind, JavaScript, UI fundamentals",
-      responsibilities: "Develop reusable components and maintain UI consistency",
-      location: "Pune, India",
-      salary: "₹3,50,000 - ₹5,50,000/year",
-    },
-    {
-      title: "Backend Developer (Node.js)",
-      description: "Work with APIs, databases, and server-side logic.",
-      qualifications: "Node.js, Express, MongoDB/MySQL",
-      responsibilities: "Build APIs, manage DB, optimize performance",
-      location: "Bangalore, India",
-      salary: "₹5,00,000 - ₹8,00,000/year",
-    },
-    {
-      title: "Backend Developer (Java/Spring)",
-      description: "Build secure backend systems and business logic layers.",
-      qualifications: "Java, Spring Boot, SQL, APIs",
-      responsibilities: "Develop backend modules, integrate with frontend",
-      location: "Hyderabad, India",
-      salary: "₹6,00,000 - ₹9,00,000/year",
-    },
-    {
-      title: "UI/UX Designer (Web)",
-      description: "Craft clean, modern, user-centered website experiences.",
-      qualifications: "Figma, Adobe XD, Wireframing, Prototyping",
-      responsibilities: "Design layouts, create prototypes, conduct user tests",
-      location: "Delhi, India",
-      salary: "₹3,00,000 - ₹5,00,000/year",
-    },
-    {
-      title: "UI/UX Designer (Mobile Apps)",
-      description: "Design smooth and intuitive app experiences for Android & iOS.",
-      qualifications: "Figma, UX Research, Mobile Design Patterns",
-      responsibilities: "Create mockups, build flows, improve usability",
-      location: "Chennai, India",
-      salary: "₹3,50,000 - ₹5,50,000/year",
-    }
-    
-  ];
   
-  
+  const [jobs, setJobs] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    // Load job listings (mocked or saved)
+    const savedJobs = JSON.parse(localStorage.getItem("job_listings") || "[]");
+    setJobs(savedJobs);
+
+    // Load notifications
+    const savedNotifications = JSON.parse(localStorage.getItem("applicant_notifications") || "[]");
+    setNotifications(savedNotifications);
+  }, []);
+
+  const handleApply = (job) => {
+    // Save application for applicant
+    const applications = JSON.parse(localStorage.getItem("applicant_applications") || "[]");
+    const newApp = { ...job, dateTime: new Date().toISOString(), source: "listings" };
+    localStorage.setItem("applicant_applications", JSON.stringify([...applications, newApp]));
+
+    // Add recruiter notification
+    const recruiterNotifications = JSON.parse(localStorage.getItem("recruiter_notifications") || "[]");
+    const newNotif = {
+      jobTitle: job.title,
+      applicantName: localStorage.getItem("signupName") || "Applicant",
+      read: false,
+      dateTime: new Date().toISOString()
+    };
+    localStorage.setItem("recruiter_notifications", JSON.stringify([...recruiterNotifications, newNotif]));
+
+    alert("Applied successfully!");
+  };
+
+  // Count unread notifications
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div
       className="min-vh-100 p-3"
-      style={{ background: "#003847", color: "white" }}
+      style={{ background: "#003847", color: "white", width: "100vh" }}
     >
       <motion.div
         initial={{ opacity: 0, y: 30 }}
@@ -70,7 +51,14 @@ export default function JobListings() {
         transition={{ duration: 0.6 }}
         className="container"
       >
-        <h2 className="text-center mb-4">Available Job Listings</h2>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2>Available Job Listings</h2>
+          <div>
+            <span className="badge bg-info text-dark">
+              Notifications: {unreadCount}
+            </span>
+          </div>
+        </div>
 
         <div className="row g-4">
           {jobs.map((job, index) => (
@@ -92,7 +80,10 @@ export default function JobListings() {
                 <p className="mb-2"><strong>Location:</strong> {job.location}</p>
                 <p className="mb-2"><strong>Salary Range:</strong> {job.salary}</p>
 
-                <button className="btn btn-info w-100 fw-bold mt-3 rounded-3" onClick={() => navigate("/JobApplyA")}>
+                <button
+                  className="btn btn-info w-100 fw-bold mt-3 rounded-3"
+                  onClick={() => handleApply(job)}
+                >
                   Apply Now
                 </button>
               </div>

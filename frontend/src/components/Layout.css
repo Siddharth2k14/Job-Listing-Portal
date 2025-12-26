@@ -29,3 +29,28 @@
   from { opacity: 0; transform: translateY(20px);}
   to { opacity: 1; transform: translateY(0);}
 }
+.sidebar-profile-img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #0dcaf0;
+}
+
+.sidebar-profile h5 {
+  margin-bottom: 2px;
+}
+
+.sidebar-footer {
+  font-size: 12px;
+  opacity: 0.8;
+}
+/* .profile-wide {
+  width: 65%;
+  max-width: 1100px;
+  min-width: 700px;
+  margin: auto;
+} */
+.dashboard-layout {
+  display: flex;
+}
