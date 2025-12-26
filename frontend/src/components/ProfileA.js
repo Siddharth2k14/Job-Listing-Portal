@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Button, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
+import axios from "axios";
+
 const STORAGE_KEY = "applicant_profile_full";
+
 export default function ProfileA() {
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState({
@@ -20,29 +23,113 @@ export default function ProfileA() {
     certifications: "",
     projects: "",
     languages: "",
-    photo: "https://images.unsplash.com/photo-1607746882042-944635dfe10e"
+    photo: "",
+    resumeFile: null,
+    certificationsFile: null,
+    publicationsFile: null
   });
-  /* Load from localStorage */
+
+  const [resumeFile, setResumeFile] = useState(null);
+  const [certFile, setCertFile] = useState(null);
+  const [pubFile, setPubFile] = useState(null);
+  const [description, setDescription] = useState("");
+
+  const userId = localStorage.getItem("userId");
+
+  // Fetch profile
+  useEffect(() => {
+    axios.get(`/api/profile/${userId}`)
+      .then(res => {
+        setProfile(prev => ({ ...prev, ...res.data }));
+        setDescription(res.data.description || "");
+      })
+      .catch(err => console.log(err));
+  }, [userId]);
+
+  // Upload resume
+  const handleResumeUpload = async () => {
+    if (!resumeFile) return;
+    const formData = new FormData();
+    formData.append("file", resumeFile);
+
+    const res = await axios.post(`/api/profile/uploadResume`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    setProfile(prev => ({
+      ...prev,
+      resumeFile: res.data
+    }));
+
+    alert("Resume uploaded!");
+  };
+
+  // Upload certification
+  const handleCertUpload = async () => {
+    if (!certFile) return;
+    const formData = new FormData();
+    formData.append("file", certFile);
+
+    const res = await axios.post(`/api/profile/uploadCert`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    setProfile(prev => ({
+      ...prev,
+      certificationsFile: res.data
+    }));
+
+    alert("Certification uploaded!");
+  };
+
+  // Upload publication
+  const handlePubUpload = async () => {
+    if (!pubFile) return;
+    const formData = new FormData();
+    formData.append("file", pubFile);
+
+    const res = await axios.post(`/api/profile/uploadPublication`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    });
+
+    setProfile(prev => ({
+      ...prev,
+      publicationsFile: res.data
+    }));
+
+    alert("Publication uploaded!");
+  };
+
+  // Update description
+  const handleDescriptionUpdate = async () => {
+    await axios.put(`/api/profile/${userId}`, { description });
+    alert("Description updated!");
+  };
+
+  // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) setProfile(JSON.parse(saved));
   }, []);
-  /* Auto-save + notify sidebar */
+
+  // Auto-save + notify sidebar
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-    // 🔥 Notify other components (like sidebar)
     window.dispatchEvent(new Event("storage"));
   }, [profile]);
+
   const handleChange = (key, value) => {
     setProfile({ ...profile, [key]: value });
   };
+
   const handleEduChange = (key, value) => {
     setProfile({
       ...profile,
       education: { ...profile.education, [key]: value }
     });
   };
-  /* Profile photo upload */
+
+  // Profile photo upload
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -53,6 +140,7 @@ export default function ProfileA() {
     };
     reader.readAsDataURL(file);
   };
+
   return (
     <div
       style={{
@@ -77,7 +165,7 @@ export default function ProfileA() {
       >
         {/* HEADER */}
         <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2>Applicant Profile</h2>
+          <h2>My Profile</h2>
           <Button
             variant="outline-info"
             onClick={() => setIsEditing(!isEditing)}
@@ -85,6 +173,7 @@ export default function ProfileA() {
             {isEditing ? "Cancel" : "Edit"}
           </Button>
         </div>
+
         {/* PROFILE PIC */}
         <div className="text-center mb-4">
           <img
@@ -109,6 +198,7 @@ export default function ProfileA() {
           <h4 className="mt-3">{profile.name}</h4>
           <p>{profile.role}</p>
         </div>
+
         {/* ABOUT */}
         <Section title="About">
           {isEditing ? (
@@ -122,6 +212,7 @@ export default function ProfileA() {
             <p>{profile.about || "—"}</p>
           )}
         </Section>
+
         {/* BASIC INFO */}
         <Section title="Basic Information">
           {isEditing ? (
@@ -159,6 +250,7 @@ export default function ProfileA() {
             </>
           )}
         </Section>
+
         {/* SKILLS */}
         <Section title="Skills">
           {isEditing ? (
@@ -170,6 +262,7 @@ export default function ProfileA() {
             <p>{profile.skills || "—"}</p>
           )}
         </Section>
+
         {/* EXPERIENCE */}
         <Section title="Experience">
           {isEditing ? (
@@ -181,6 +274,7 @@ export default function ProfileA() {
             <p>{profile.experience || "—"}</p>
           )}
         </Section>
+
         {/* EDUCATION */}
         <Section title="Education">
           {isEditing ? (
@@ -211,19 +305,32 @@ export default function ProfileA() {
             </p>
           )}
         </Section>
+
         {/* CERTIFICATIONS */}
         <Section title="Certifications">
           {isEditing ? (
-            <Form.Control
-              as="textarea"
-              rows={2}
-              value={profile.certifications}
-              onChange={(e) => handleChange("certifications", e.target.value)}
-            />
+            <>
+              <textarea
+                rows={2}
+                value={profile.certFile}
+                onChange={(e) => handleChange("certifications", e.target.value)}
+              />
+              <input type="file" onChange={(e) => setCertFile(e.target.files[0])} />
+              <button className="btn btn-sm btn-info mt-2" onClick={handleCertUpload}>Upload</button>
+            </>
           ) : (
-            <p>{profile.certifications || "—"}</p>
+            profile.certFile?.filename ? (
+              <a
+                href={`/api/profile/file/${profile.certFile.fileId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {profile.certFile.filename}
+              </a>
+            ) : <p>—</p>
           )}
         </Section>
+
         {/* PROJECTS */}
         <Section title="Projects">
           {isEditing ? (
@@ -237,6 +344,52 @@ export default function ProfileA() {
             <p>{profile.projects || "—"}</p>
           )}
         </Section>
+
+        {/* RESUME */}
+        <Section title="Resume">
+          {isEditing ? (
+            <>
+              <input type="file" onChange={(e) => setResumeFile(e.target.files[0])} />
+              <button className="btn btn-sm btn-info mt-2" onClick={handleResumeUpload}>Upload</button>
+            </>
+          ) : (
+            profile.resumeFile?.filename ? (
+              <a
+                href={`/api/profile/file/${profile.resumeFile.fileId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {profile.resumeFile.filename}
+              </a>
+            ) : <p>—</p>
+          )}
+        </Section>
+
+        {/* PUBLICATIONS */}
+        <Section title="Publications">
+          {isEditing ? (
+            <>
+              <textarea
+                rows={2}
+                value={profile.pubFile}
+                onChange={(e) => handleChange("publications", e.target.value)}
+              />
+              <input type="file" onChange={(e) => setPubFile(e.target.files[0])} />
+              <button className="btn btn-sm btn-info mt-2" onClick={handlePubUpload}>Upload</button>
+            </>
+          ) : (
+            profile.pubFile?.filename ? (
+              <a
+                href={`/api/profile/file/${profile.pubFile.fileId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {profile.pubFile.filename}
+              </a>
+            ) : <p>—</p>
+          )}
+        </Section>
+
         {/* LANGUAGES */}
         <Section title="Languages">
           {isEditing ? (
@@ -249,6 +402,7 @@ export default function ProfileA() {
             <p>{profile.languages || "—"}</p>
           )}
         </Section>
+
         {isEditing && (
           <div className="text-center mt-4">
             <Button variant="info" onClick={() => setIsEditing(false)}>
@@ -260,7 +414,8 @@ export default function ProfileA() {
     </div>
   );
 }
-/* Reusable Section Component */
+
+// Reusable Section Component
 function Section({ title, children }) {
   return (
     <div className="mb-4">
